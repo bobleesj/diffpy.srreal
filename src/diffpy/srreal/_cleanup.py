@@ -12,9 +12,7 @@
 # See LICENSE.txt for license information.
 #
 ##############################################################################
-
-"""
-Cancel registration of Python-extended C++ classes when Python exits.
+"""Cancel registration of Python-extended C++ classes when Python exits.
 
 Note
 ----
@@ -27,10 +25,11 @@ a call of _registerThisType.
 """
 
 
+import atexit
 import weakref
 
-
 # Routine to be used from srreal_ext module ----------------------------------
+
 
 def registerForCleanUp(obj):
     """Remember to clean up the specified prototype at Python exit.
@@ -47,7 +46,9 @@ def registerForCleanUp(obj):
     _cleanup_handler.add(obj)
     return
 
+
 # ----------------------------------------------------------------------------
+
 
 class _DerivedClassesCleanUpHandler(object):
 
@@ -55,14 +56,12 @@ class _DerivedClassesCleanUpHandler(object):
         self._references = set()
         return
 
-
     def add(self, obj):
         wr = weakref.ref(obj)
         self._references.add(wr)
         return
 
-
-    def __del__(self):
+    def clean(self):
         while self._references:
             wr = self._references.pop()
             obj = wr()
@@ -70,12 +69,14 @@ class _DerivedClassesCleanUpHandler(object):
                 obj._deregisterType(obj.type())
         return
 
+
 # end of class _DerivedClassesCleanUpHandler
 
 
 # create singleton instance of the cleanup handler
 _cleanup_handler = _DerivedClassesCleanUpHandler()
-del _DerivedClassesCleanUpHandler
+atexit.register(_cleanup_handler.clean)
 
+del _DerivedClassesCleanUpHandler
 
 # End of file.

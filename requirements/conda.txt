@@ -1,0 +1,8 @@
+boost
+numpy
+libdiffpy
+setuptools
+diffpy.structure
+gsl
+# periodictable
+# pyobjcryst (up to py3.11 for mac)
